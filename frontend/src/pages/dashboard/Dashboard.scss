@@ -1,0 +1,35 @@
+.dashboard {
+    min-height: 100vh; /* or whatever layout you prefer */
+    padding: 20px;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  
+    .dashCard {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 20px;
+  
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+  
+      .dashCardHeader {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+  
+        h1 {
+          font-size: 20px;
+          color: #333;
+          margin: 0;
+        }
+      }
+    }
+  }
+  

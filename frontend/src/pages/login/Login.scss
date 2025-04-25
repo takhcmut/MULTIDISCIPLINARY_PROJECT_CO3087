@@ -1,0 +1,197 @@
+.loginPage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #4F9C80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bgWindTurbine {
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 25%;
+  z-index: 1;
+  opacity: 1;
+}
+
+.bgHouse {
+  position: absolute;
+  bottom: 50%;
+  left: 15%;
+  width: 25%;
+  z-index: 2;
+  opacity: 1;
+}
+
+.bgLeaves{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 25%;
+  z-index: 1;
+  opacity: 1;
+}
+
+.formCard {
+  position: relative;
+  z-index: 3;
+  background: rgba(217, 217, 217, 0.6); 
+  border-radius: 8px;
+  padding: 50px;
+  width: 40%; 
+  margin-left: 25%; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.formCard h1 {
+  margin-bottom: 20px;
+  color: #d86c65;
+  font-size: 60px;
+  font-weight: bold;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-bottom: 20px;
+}
+
+.tabs span {
+  cursor: pointer;
+  padding-bottom: 5px;
+  font-size: 25px;
+  transition: all 0.3s;
+}
+
+.activeTab {
+  color: #3D5A80;
+  font-weight: bold;
+  border-bottom: 2px solid #3D5A80;
+}
+
+.inactiveTab {
+  color: #5F7C8D;
+  opacity: 0.86;
+  font-weight: bold;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 35px; 
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  margin-bottom: 10px;
+}
+
+form input {
+  padding: 5px;
+  border: none;
+  border-bottom: 3px solid #5F7C8D;
+  background: transparent;
+  font-size: 20px;
+  color: #2e6280;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+form input:focus {
+  border-color: #2b2f5c;
+}
+
+.errorMsg {
+  color: red;
+  font-size: 14px;
+  height: 18px;
+}
+
+form button {
+  padding: 12px;
+  border: none;
+  background-color: #3D5A80;
+  color: #FFF;
+  font-weight: bold;
+  font-size: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form button:hover {
+  background-color: #1d2040;
+}
+
+.passwordFieldContainer {
+  position: relative;
+  width: 100%;
+}
+
+.passwordFieldContainer input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.passwordIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #888;
+}
+
+.orText {
+  margin: 10px 0;
+  color: #666;
+  font-size: 20px;
+}
+
+.socialIcons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.socialIcons img {
+  width: 40px;
+  cursor: pointer;
+}
+.loadingOverlay {
+  position: absolute;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3D5A80;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,97 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  height: 100px;
+  padding: 0 20px;
+  border-radius: 8px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+
+  .currentPage {
+    flex: 1;             
+    display: flex;
+    justify-content: left;
+    span {
+      font-size: 33px;
+      font-weight: 600;
+      color: #333;
+    }
+  }
+  .leftNavbar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .bkLogo {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+
+    .appName {
+      font-size: 25px;
+      font-weight: bold;
+      color: #0a4d68;
+      text-decoration: none;
+      transition: color 0.3s;
+      &:hover {
+        color: #0e6b8c;
+      }
+    }
+
+    .menuButton {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 27px;
+      svg {
+        font-size: 30px;
+        color: #333;
+        transition: transform 0.2s, color 0.2s;
+      }
+      &:hover svg {
+        color: #0a4d68;
+      }
+      &:active svg {
+        transform: scale(0.9);
+      }
+    }
+  }
+
+  .rightNavbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .userAvatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .userName {
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    &:hover .userName {
+      color: #0a4d68;
+      font-weight: 600;
+    }
+  }
+}

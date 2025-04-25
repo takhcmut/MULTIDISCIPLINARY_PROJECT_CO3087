@@ -1,0 +1,41 @@
+.mainLayout {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #4f9c80;
+  overflow: hidden;
+  padding: 20px;
+
+  .bgWindTurbine {
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    width: 25%;
+    z-index: 1;
+  }
+
+  .bgLeaves {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 25%;
+    z-index: 1;
+  }
+
+  .layoutContent {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    margin-top: 10px;
+  }
+
+  .pageContent {
+    flex: 8;
+    background-color: #d9d9d9;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 0px;
+  }
+}

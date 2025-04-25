@@ -1,0 +1,47 @@
+.history {
+  margin: 20px;
+  font-family: sans-serif;
+  
+  h1 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    thead {
+      background-color: #078cea;
+      color: white;
+
+      th {
+        padding: 15px;
+        text-align: left;
+        font-size: 20px;
+      }
+    }
+
+    tbody {
+      tr {
+        &:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+
+        &:hover {
+          background-color: #eef6fd;
+        }
+
+        td {
+          padding: 12px 15px;
+          font-size: 18px;
+          color: #555;
+          border: 1px solid #ddd;
+        }
+      }
+    }
+  }
+}
