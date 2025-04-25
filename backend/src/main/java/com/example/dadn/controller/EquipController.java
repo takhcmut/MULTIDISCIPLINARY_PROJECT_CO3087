@@ -17,11 +17,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.sql.Timestamp;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -92,4 +95,26 @@ public class EquipController {
         String msg = historyService.saveStateFromAdafruit(feed, username);
         return ResponseEntity.ok(msg);
     }
+    @PostMapping("/adduserequip")
+    public ResponseEntity<String> newuserequip(@RequestParam Integer equipId,
+    @RequestParam String username) {
+        //TODO: process POST request
+        String msg = equipService.newUserEquip(equipId, username);
+        return ResponseEntity.ok(msg);
+    }
+    @DeleteMapping("/deleteuserequip")
+    public ResponseEntity<String> deluserequip(@RequestParam Integer equipId,
+    @RequestParam String username) {
+        //TODO: process POST request
+        String msg = equipService.deleteUserEquip(equipId, username);
+        return ResponseEntity.ok(msg);
+    }
+    @PostMapping("/newsche")
+    public  ResponseEntity<String>  newSchedule(@RequestParam Integer EquipId,@RequestParam Enum_state state) {
+        //TODO: process POST request
+        String msg = equipService.newSchedule(EquipId,new Timestamp(System.currentTimeMillis()), state);
+        return  ResponseEntity.ok(msg);
+    }
+    
+    
 }

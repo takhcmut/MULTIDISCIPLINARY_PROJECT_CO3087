@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 
@@ -14,10 +16,13 @@ import com.example.dadn.entities.Equipment;
 import com.example.dadn.entities.Schedule;
 import com.example.dadn.entities.UserEquip;
 import com.example.dadn.entities.enums.Enum_state;
+import com.example.dadn.entities.key.ScheduleKey;
+import com.example.dadn.entities.key.UserEquipKey;
 import com.example.dadn.repositories.EquipmentRepository;
 import com.example.dadn.repositories.ScheduleRepository;
 import com.example.dadn.repositories.UserEquipRepository;
 import com.example.dadn.service.EquipService;
+import com.example.dadn.repositories.*;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -29,6 +34,7 @@ public class EquipmentService implements EquipService{
     private EquipmentRepository equipmentRepository;
     private UserEquipRepository userEquipRepository;
     private ScheduleRepository scheduleRepository;
+    
     @Override
     public Equipment change(Integer id) {
         
@@ -37,6 +43,30 @@ public class EquipmentService implements EquipService{
         equipmentRepository.save(a);
         return a;
     }
+    @Override
+    public String deleteUserEquip(Integer id, String username){
+        UserEquip temp = userEquipRepository.findByUserEquipKey_UsernameAndUserEquipKey_EquipId(username, id);
+        if(temp== null) return "Nguoi dung khong so huu thiet bi nay";
+        userEquipRepository.delete(temp);
+        return "Xoa thanh cong";
+    };
+    @Override
+    public String newUserEquip(Integer id, String username){
+        UserEquip temp = userEquipRepository.findByUserEquipKey_UsernameAndUserEquipKey_EquipId(username, id);
+        if(temp!= null) return "Nguoi dung da so huu thiet bi nay";
+        UserEquipKey newKey = new UserEquipKey();
+    newKey.setUsername(username);
+    newKey.setEquipId(id);
+
+    // Tạo UserEquip mới
+    UserEquip newEquip = new UserEquip();
+    newEquip.setUserEquipKey(newKey);
+
+    // Lưu vào database
+    userEquipRepository.save(newEquip);
+
+    return "Thêm thiết bị thành công cho người dùng!";
+    };
     @Override
     public List<Equipment> all(){
         
@@ -54,14 +84,34 @@ public class EquipmentService implements EquipService{
     public Schedule getSche(Integer id){
         List<Schedule> scheduleList = scheduleRepository.findByScheduleKey_EquipId(id);
         Schedule temp = (scheduleList != null && !scheduleList.isEmpty()) ? scheduleList.get(0) : null;
-
-    LocalDateTime now = LocalDateTime.now();    
+if (temp==null){return null;}
+    LocalDateTime now = LocalDateTime.now(); 
+    System.out.print(now);
+    System.err.println(temp.getScheduleKey().getTimestamp());   
     if (now.isAfter(temp.getScheduleKey().getTimestamp().toLocalDateTime())) {
         // now > timestamp
         scheduleRepository.delete(temp);
+        return null;
     }
         
         return temp;
+    };
+    @Override
+    public String newSchedule(Integer EquipId, Timestamp timestamp,Enum_state state){
+        ScheduleKey key = new ScheduleKey();
+        key.setEquipId(EquipId);
+        key.setTimestamp(timestamp);
+
+        if (scheduleRepository.existsById(key)) {
+            return "Lịch cho thiết bị này tại thời điểm này đã tồn tại!";
+        }
+
+        Schedule schedule = new Schedule();
+        schedule.setScheduleKey(key);
+        schedule.setState(state);
+
+        scheduleRepository.save(schedule);
+        return "them thanh cong";
     };
     @Override
     public List<Equipment> getbyUsername(String username){

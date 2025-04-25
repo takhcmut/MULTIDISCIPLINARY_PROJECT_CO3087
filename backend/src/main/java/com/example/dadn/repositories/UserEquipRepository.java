@@ -12,4 +12,5 @@ import java.util.List;
 public interface UserEquipRepository extends JpaRepository<UserEquip,UserEquipKey> {
     List<UserEquip> findByUserEquipKey_EquipId(Integer equipId);
     List<UserEquip> findByUserEquipKey_Username(String username);
+    UserEquip findByUserEquipKey_UsernameAndUserEquipKey_EquipId(String username,Integer EquipId);
 }
