@@ -100,19 +100,27 @@ public class EquipController {
     @RequestParam String username) {
         //TODO: process POST request
         String msg = equipService.newUserEquip(equipId, username);
-        return ResponseEntity.ok(msg);
+        if (msg.equals("Nguoi dung da so huu thiet bi nay")) {
+            return ResponseEntity.badRequest().body(msg);
+        } else {
+            return ResponseEntity.ok(msg);
+        }
     }
     @DeleteMapping("/deleteuserequip")
     public ResponseEntity<String> deluserequip(@RequestParam Integer equipId,
     @RequestParam String username) {
         //TODO: process POST request
         String msg = equipService.deleteUserEquip(equipId, username);
-        return ResponseEntity.ok(msg);
+        if (msg.equals("Xoa thanh cong")) {
+            return ResponseEntity.ok(msg);
+        } else {
+            return ResponseEntity.badRequest().body(msg);
+        }
     }
     @PostMapping("/newsche")
-    public  ResponseEntity<String>  newSchedule(@RequestParam Integer EquipId,@RequestParam Enum_state state) {
+    public  ResponseEntity<String>  newSchedule(@RequestParam Integer EquipId,@RequestParam Timestamp time,@RequestParam Enum_state state) {
         //TODO: process POST request
-        String msg = equipService.newSchedule(EquipId,new Timestamp(System.currentTimeMillis()), state);
+        String msg = equipService.newSchedule(EquipId,time, state);
         return  ResponseEntity.ok(msg);
     }
     

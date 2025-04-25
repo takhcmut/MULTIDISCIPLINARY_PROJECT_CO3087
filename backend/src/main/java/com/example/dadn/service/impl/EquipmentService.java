@@ -85,10 +85,10 @@ public class EquipmentService implements EquipService{
         List<Schedule> scheduleList = scheduleRepository.findByScheduleKey_EquipId(id);
         Schedule temp = (scheduleList != null && !scheduleList.isEmpty()) ? scheduleList.get(0) : null;
 if (temp==null){return null;}
-    LocalDateTime now = LocalDateTime.now(); 
+    Timestamp now = new Timestamp(System.currentTimeMillis());
     System.out.print(now);
     System.err.println(temp.getScheduleKey().getTimestamp());   
-    if (now.isAfter(temp.getScheduleKey().getTimestamp().toLocalDateTime())) {
+    if (now.after(temp.getScheduleKey().getTimestamp())) {
         // now > timestamp
         scheduleRepository.delete(temp);
         return null;

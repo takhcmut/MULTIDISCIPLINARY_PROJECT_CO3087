@@ -6,7 +6,21 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import HistoryIcon from "@mui/icons-material/History";
 import StatusIcon from "@mui/icons-material/CheckCircle";
 import TuneIcon from "@mui/icons-material/Tune";
+import AccessAlarmsOutlinedIcon from '@mui/icons-material/AccessAlarmsOutlined';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { TextField, Button } from "@mui/material";
+
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from "dayjs";
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+
+
+
+
+
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -42,8 +56,17 @@ export default function DeviceInfo() {
   const [hasSavedConfig, setHasSavedConfig] = useState(false);
   var warningCount = 0;
   // const [warningCount, setWarningCount] = useState(0);
+  
+
+const [timerAction, setTimerAction] = useState("on"); // "on" hoặc "off"
 
 
+
+const [absoluteTime, setAbsoluteTime] = useState(dayjs());
+
+
+
+  
 
   // 1) Load config from localStorage
   useEffect(() => {
@@ -113,13 +136,8 @@ export default function DeviceInfo() {
       const iv = setInterval(() => {
         async function fetchState() {
           try {
-            let buttonFeed = null;
-            // 🔁 Mapping thiết bị → feed trạng thái
-            if (id === "1") buttonFeed = "button1";
-            else if (id === "5") buttonFeed = "button2";
-            else buttonFeed = "button1"; // fallback
-    
-            const res = await fetch(`https://io.adafruit.com/api/v2/BaoLong2004/feeds/${buttonFeed}/data?limit=1`);
+            
+            const res = await fetch(`https://io.adafruit.com/api/v2/BaoLong2004/feeds/${feedName}/data?limit=1`);
             const j = await res.json();
             setSensorState(Number(j[0]?.value));
           } catch (e) {
@@ -129,7 +147,7 @@ export default function DeviceInfo() {
         fetchState();
       }, 1000);
       return () => clearInterval(iv);
-    }, [id]);
+    }, [id, feedName]);
     
     
 
@@ -169,21 +187,7 @@ export default function DeviceInfo() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feed: feedName, status: "0" })
       });
-      // 2) backend state
-      // await fetch(
-      //   `${API_BASE_URL}/${username}/changeState/${id}`,
-      //   {
-      //     method: "PUT",
-      //     headers: {
-      //       Authorization: `Bearer ${token}`
-      //     }
-      //   }
-      // );
-      // 3) save history
-      // await fetch(
-      //   `${API_BASE_URL}/save?feed=${feedName}&username=${username}`,
-      //   { method: "POST" }
-      // );
+     
       toast.info("Thiết bị đã tự tắt vì vượt giới hạn!");
     } catch (e) {
       console.error("Auto‑shutdown failed", e);
@@ -225,6 +229,52 @@ export default function DeviceInfo() {
     tempLimit,
     brightnessLimit
   ]);
+  
+  // 7) Timer check
+  useEffect(() => {
+    const checkTimer = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/getSche/${id}`);
+        const data = await res.json();
+        console.log("GET Response:", data);
+    
+        const timestampStr = data?.scheduleKey?.timestamp;
+        const actionState = data?.state;
+    
+        if (!timestampStr || !actionState) {
+          console.log("❌ Thiếu timestamp hoặc state");
+          return;
+        }
+    
+        const scheduledTime = dayjs(timestampStr);
+        const now = dayjs();
+    
+        console.log("⏰ Now:", now.format());
+        console.log("🗓️ Scheduled:", scheduledTime.format());
+    
+        if (now.isAfter(scheduledTime)) {
+          const action = actionState === "On" ? "1" : "0";
+          console.log("📤 Sending control:", action);
+          await fetch(CONTROL_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ feed: feedName, status: action })
+          });
+          toast.success(`Thiết bị đã được ${action === "1" ? "bật" : "tắt"} theo lịch`);
+        } else {
+          console.log("⏳ Chưa tới giờ");
+        }
+    
+      } catch (e) {
+        console.error("❌ Timer check failed", e);
+      }
+    };
+    
+  
+    const interval = setInterval(checkTimer, 10000); // mỗi 10 giây kiểm tra
+    return () => clearInterval(interval);
+  }, [id, feedName]);
+  
   
 
   return (
@@ -343,6 +393,72 @@ export default function DeviceInfo() {
             </div>
           </div>
         </div>
+
+        {/* TIMER */}
+        <div className="deviceInfoCard">
+          <div className="deviceInfoCardHeader">
+            <AccessAlarmsOutlinedIcon />
+            <h1>Hẹn Giờ</h1>
+          </div>
+          <hr />
+          <div className="deviceInfoCardBody">
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <div className="timerItem">
+                <DateTimePicker
+                  label="Chọn ngày giờ"
+                  value={absoluteTime}
+                  onChange={(newVal) => setAbsoluteTime(newVal)}
+                  sx={{ width: "100%" }}
+                />
+                
+          <ToggleButtonGroup
+            value={timerAction}
+            exclusive
+            onChange={(e, newAction) => {
+              if (newAction !== null) setTimerAction(newAction);
+            }}
+            sx={{ mt: 2 }}
+          >
+            <ToggleButton value="on">Bật</ToggleButton>
+            <ToggleButton value="off">Tắt</ToggleButton>
+          </ToggleButtonGroup>
+
+    
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={async () => {
+            const now = dayjs();
+            if (absoluteTime.diff(now) <= 0) {
+              toast.error("Giờ đã chọn đã qua rồi!");
+              return;
+            }
+          
+            const formattedTime = absoluteTime.format("YYYY-MM-DD HH:mm:ss");
+            const action = timerAction === "on" ? "On" : "Off";
+          
+            try {
+              await fetch(`${API_BASE_URL}/newsche?EquipId=${id}&state=${action}&time=${formattedTime}`, {
+                method: "POST",
+              });
+              toast.success(`Đã đặt lịch ${action} vào ${absoluteTime.format("HH:mm DD/MM/YYYY")}`);
+            } catch (e) {
+              toast.error("Lỗi khi đặt lịch!");
+              console.error(e);
+            }
+          }
+          }
+          sx={{ mt: 2 }}
+        >
+          Đặt hẹn giờ
+              </Button>
+            </div>
+          </LocalizationProvider>
+        </div>
+      </div>
+
+  
+
 
         {/* HISTORY */}
         <div className="deviceInfoCard">
