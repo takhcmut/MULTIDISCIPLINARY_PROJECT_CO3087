@@ -108,21 +108,21 @@ const ManageDevice = () => {
     e.preventDefault();
   
     try {
+      let res, text;
+  
       if (formMode === "add") {
-        const res = await fetch(
-          `${API_BASE_URL}${formUsername}/addDevice/${formValue}`,
+        res = await fetch(
+          `${API_BASE_URL}adduserequip?equipId=${formValue}&username=${formUsername}`,
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              // put your Authorization header here, if needed
             },
           }
         );
-        if (!res.ok) throw new Error();
-        toast.success("Đã thêm thiết bị");
-      } else if (formMode === "delete") {
-        const res = await fetch(
-          `${API_BASE_URL}${formUsername}/deleteDevice/${formValue}`,
+      } else {
+        res = await fetch(
+          `${API_BASE_URL}deleteuserequip?equipId=${formValue}&username=${formUsername}`,
           {
             method: "DELETE",
             headers: {
@@ -130,21 +130,34 @@ const ManageDevice = () => {
             },
           }
         );
-        if (!res.ok) throw new Error();
-        toast.success("Đã xóa thiết bị");
-        setDevices((prev) =>
-          prev.filter((d) => d.equipKey.equipId.toString() !== formValue)
-        );
       }
-    } catch {
-      toast.error("Yêu cầu thất bại");
+  
+      // read the raw text from the response body
+      text = await res.text();
+  
+      if (res.ok) {
+        // show success message from the server
+        toast.success(text);
+        // if this was a delete, remove the device from state
+        if (formMode === "delete") {
+          setDevices((prev) =>
+            prev.filter((d) => d.equipKey.equipId.toString() !== formValue)
+          );
+        }
+      } else {
+        // show the error message from the server
+        toast.error(text);
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("Có lỗi xảy ra: " + err.message);
     } finally {
+      // reset your form state no matter what
       setFormMode(null);
       setFormValue("");
       setFormUsername("");
     }
-  };
-  
+  };  
 
   return (
     <div className="manageDevice">
