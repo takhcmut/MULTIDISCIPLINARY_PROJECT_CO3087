@@ -1,161 +1,214 @@
 // src/pages/manageDevice/ManageDevice.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { loadCache, saveCache } from "../../utils/cache";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./ManageDevice.scss";
 
 import ACIcon from "../../assets/ac_icon.png";
 import PlusIcon from "../../assets/plus_icon.png";
+import MinusIcon from "../../assets/delete_icon.png";
 
-const API_BASE_URL = "http://localhost:8080/dadn/"; // backend
-const ADA_BASE_URL = "https://io.adafruit.com/api/v2/BaoLong2004/feeds";  //ada
-const GATEWAY_URL = "http://localhost:5000";  // python gateway
+const API_BASE_URL = "http://localhost:8080/dadn/";
+const ADA_BASE_URL = "https://io.adafruit.com/api/v2/BaoLong2004/feeds";
+const GATEWAY_URL = "http://localhost:5000";
 
 const ManageDevice = () => {
   const navigate = useNavigate();
   const [devices, setDevices] = useState([]);
+  const [formMode, setFormMode] = useState(null)
+  const [formValue, setFormValue] = useState("");
 
-  // Toggle handler now accepts equipId (not some other id field)
-  const handleToggleDevice = async (equipId, currentState, feed) => {
-    console.log("Toggling device", equipId, "currentState:", currentState);
-    const newState = currentState === 1 ? "0" : "1";
-    const username = localStorage.getItem("username");
-    try {
-      const res = await fetch(`${GATEWAY_URL}/control`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ feed, status: newState }),
-      });
-      // const changeStateResponse = await fetch(
-      //   `${API_BASE_URL}${username}/changeState/${equipId}`,
-      //   {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //     body: JSON.stringify({ status: newState }),
-      //   }
-      // );
-      // const saveResponse = await fetch(
-      //   `${API_BASE_URL}save?feed=${feed}&username=${username}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   }
-      // );
-      if (!changeStateResponse.ok) {
-        console.error("Failed to change state:", await changeStateResponse.text());
-        return;
-      }
-      if (!saveResponse.ok) {
-        console.error("Failed to save:", await saveResponse.text());
-        return;
-      }
-      console.log("State changed and saved successfully.");
-      if (res.ok) {
-        setDevices(prev =>
-          prev.map(d =>
-            d.equipKey.equipId === equipId 
-              ? { ...d, equipment_state: currentState === 1 ? 0 : 1 }
-              : d
-          )
-        );
-      } else {
-        console.error("Failed to toggle device:", await res.text());
-      }
-    } catch (error) {
-      console.error("Error toggling device:", error);
-    }
-  };
-
+  // 1) Fetch + poll
   useEffect(() => {
-    // 1) Define the fetchDevices function exactly as before
+    let mounted = true;
     const fetchDevices = async () => {
       const username = localStorage.getItem("username");
-      if (!username) {
-        console.error("Username not found in localStorage.");
-        return;
-      }
-  
+      if (!username) return;
+
       try {
-        // Fetch metadata
-        const response = await fetch(`${API_BASE_URL}${username}/getequip`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+        const res = await fetch(`${API_BASE_URL}${username}/getequip`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        if (!response.ok) throw new Error("Failed to fetch devices");
-        const data = await response.json();
-  
-        // Override each device.state with the live gateway value
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
         const mapped = await Promise.all(
           data.map(async (d) => {
-            const feedName = d.equipName;
             let stateValue = 0;
-  
             try {
               const sensorRes = await fetch(
-                `${ADA_BASE_URL}/${feedName}/data?limit=1`,
+                `${ADA_BASE_URL}/${d.equipName}/data?limit=1`
               );
-              if (!sensorRes.ok) throw new Error("Gateway read failed");
               const sensorData = await sensorRes.json();
-              // console.log("Sensor data:", sensorData);
-              stateValue = Number(sensorData[0].value);
-              // console.log("State value:", stateValue);
-            } catch (err) {
-              console.warn(`Failed to read sensor state for ${feedName}:`, err);
-            }
-  
+              stateValue = Number(sensorData[0]?.value) || 0;
+            } catch {}
             return {
               equipKey: d.equipKey,
-              equipName: feedName,
+              equipName: d.equipName,
               equipment_type: d.equipment_type,
               equipment_state: stateValue,
               icon: ACIcon,
             };
           })
         );
-  
-        setDevices(mapped);
-      } catch (err) {
-        console.error("Error fetching devices:", err);
+
+        if (mounted) setDevices(mapped);
+      } catch {
+        toast.error("Không thể tải danh sách thiết bị");
       }
     };
-  
-    // 2) Kick off an immediate fetch…
+
     fetchDevices();
-  
-    // …then poll every 500 ms
-    const intervalId = setInterval(fetchDevices, 500);
-  
-    // 3) Cleanup on unmount
-    return () => clearInterval(intervalId);
+    const iv = setInterval(fetchDevices, 500);
+    return () => {
+      mounted = false;
+      clearInterval(iv);
+    };
   }, []);
-  
-  
- 
+
+  // 2) Toggle on/off
+  const handleToggleDevice = async (equipId, currentState, feed) => {
+    const newState = currentState === 1 ? "0" : "1";
+    try {
+      await fetch(`${GATEWAY_URL}/control`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feed, status: newState }),
+      });
+      await fetch(
+        `${API_BASE_URL}${localStorage.getItem("username")}/changeState/${equipId}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      await fetch(
+        `${API_BASE_URL}save?feed=${feed}&username=${localStorage.getItem("username")}`,
+        { method: "POST" }
+      );
+
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.equipKey.equipId === equipId
+            ? { ...d, equipment_state: currentState === 1 ? 0 : 1 }
+            : d
+        )
+      );
+      toast.success("Đã chuyển trạng thái thiết bị");
+    } catch {
+      toast.error("Chuyển trạng thái thất bại");
+    }
+  };
+
+  // 3) Add / Delete form submission
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const username = localStorage.getItem("username");
+    try {
+      if (formMode === "add") {
+        const res = await fetch(`${API_BASE_URL}${username}/addDevice`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ equipId: formValue }),
+        });
+        if (!res.ok) throw new Error();
+        toast.success("Đã thêm thiết bị");
+      } else if (formMode === "delete") {
+        const res = await fetch(
+          `${API_BASE_URL}${username}/deleteDevice/${formValue}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error();
+        toast.success("Đã xóa thiết bị");
+        setDevices((prev) =>
+          prev.filter((d) => d.equipKey.equipId.toString() !== formValue)
+        );
+      }
+    } catch {
+      toast.error("Yêu cầu thất bại");
+    } finally {
+      setFormMode(null);
+      setFormValue("");
+    }
+  };
 
   return (
     <div className="manageDevice">
+      <ToastContainer position="top-right" autoClose={2000} />
+
       <div className="deviceListContainer">
         <div className="deviceListHeader">
           <span className="listTitle">Danh sách thiết bị</span>
-          <button
-            className="addDeviceBtn"
-            onClick={() => alert("Add device logic here!")}
-          >
-            <img src={PlusIcon} alt="plus-icon" className="plusIcon" />
-          </button>
+          <div className="headerActions">
+            <button
+              className="addDeviceBtn"
+              onClick={() => {
+                setFormMode("add");
+                setFormValue("");
+              }}
+            >
+              <img src={PlusIcon} alt="add" /> Thêm
+            </button>
+            <button
+              className="deleteDeviceBtn"
+              onClick={() => {
+                setFormMode("delete");
+                setFormValue("");
+              }}
+            >
+              <img src={MinusIcon} alt="delete" /> Xóa
+            </button>
+          </div>
         </div>
 
+        {/* === POPUP MODAL FORM === */}
+        {formMode && (
+          <div className="modalOverlay">
+            <div className="modalContent">
+              <h2>
+                {formMode === "add" ? "Thêm Thiết bị" : "Xóa Thiết bị"}
+              </h2>
+              <form onSubmit={handleFormSubmit}>
+                <div className="formGroup">
+                  <label>
+                    {formMode === "add"
+                      ? "ID thiết bị mới"
+                      : "ID thiết bị cần xóa"}
+                  </label>
+                  <input
+                    type="text"
+                    value={formValue}
+                    onChange={(e) => setFormValue(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="formButtons">
+                  <button type="submit">
+                    {formMode === "add" ? "Thêm" : "Xóa"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormMode(null)}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <div className="deviceList">
-          {devices.map(device => (
+          {devices.map((device) => (
             <div className="deviceItem" key={device.equipKey.equipId}>
               <img
                 src={device.icon}
@@ -175,7 +228,6 @@ const ManageDevice = () => {
                       device.equipName
                     )
                   }
-                  id={`toggle-${device.equipKey.equipId}`}
                 />
                 <span className="slider" />
               </label>
@@ -187,7 +239,9 @@ const ManageDevice = () => {
                   }`}
                 />
                 <span>
-                  {device.equipment_state === 1 ? "Đang Bật" : "Đang Tắt"}
+                  {device.equipment_state === 1
+                    ? "Đang Bật"
+                    : "Đang Tắt"}
                 </span>
               </div>
 

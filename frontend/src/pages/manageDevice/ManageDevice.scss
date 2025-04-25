@@ -18,24 +18,30 @@
         color: #333;
       }
 
-      .addDeviceBtn {
-        background: none;
-        border: none;
-        cursor: pointer;
+      .headerActions {
         display: flex;
-        align-items: center;
-        padding: 5px;
-        border-radius: 4px;
-        transition: background-color 0.2s;
+        gap: 10px;
 
-        img {
-          width: 25px;
-          height: 25px;
-          margin-right: 5px;
-        }
+        .addDeviceBtn,
+        .deleteDeviceBtn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          padding: 5px 10px;
+          border-radius: 4px;
+          transition: background-color 0.2s;
 
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          img {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+          }
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+          }
         }
       }
     }
@@ -58,7 +64,6 @@
         .deviceIcon {
           width: 40px;
           height: 40px;
-          margin-right: 10px;
           object-fit: cover;
         }
 
@@ -68,11 +73,51 @@
           color: #333;
         }
 
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 46px;
+          height: 24px;
+
+          input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+          }
+
+          .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+
+            &:before {
+              position: absolute;
+              content: "";
+              height: 18px;
+              width: 18px;
+              left: 3px;
+              bottom: 3px;
+              background-color: #FFF;
+              transition: .4s;
+              border-radius: 50%;
+            }
+          }
+
+          input:checked + .slider {
+            background-color: #34C759;
+          }
+          input:checked + .slider:before {
+            transform: translateX(22px);
+          }
+        }
+
         .deviceStatus {
           display: flex;
           align-items: center;
           gap: 6px;
-          margin-right: 20px;
 
           .statusDot {
             width: 10px;
@@ -80,12 +125,8 @@
             border-radius: 50%;
             display: inline-block;
 
-            &.on {
-              background-color: #2ecc71;
-            }
-            &.off {
-              background-color: #e74c3c;
-            }
+            &.on { background-color: #2ecc71; }
+            &.off { background-color: #e74c3c; }
           }
         }
 
@@ -98,58 +139,89 @@
           font-weight: bold;
           transition: background-color 0.2s, transform 0.1s;
 
-          &:hover {
-            background-color: #5aa3d7;
-          }
-
-          &:active {
-            transform: scale(0.95);
-          }
+          &:hover { background-color: #5aa3d7; }
+          &:active { transform: scale(0.95); }
         }
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 46px;
-          height: 24px;
-          padding: 10px 0;
-        
-          input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-          }
-        
-          .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0;
-            right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        
-            &:before {
-              position: absolute;
-              content: "";
-              height: 18px;
-              width: 18px;
-              left: 3px;
-              bottom: 3px;
-              background-color: #FFFFFF;
-              transition: .4s;
-              border-radius: 50%;
-            }
-          }
-          //iostoggle color
-          input:checked + .slider {
-            background-color: #34C759;
-          }
-        
-          input:checked + .slider:before {
-            transform: translateX(22px);
-          }
-        }  
       }
+    }
+  }
+
+  // ===== Modal styles =====
+  .modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .modalContent {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 320px;
+    max-width: 90%;
+  
+    // Animation here
+    animation: slideUp 0.2s ease-out;
+  
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 20px;
+      text-align: center;
+    }
+  
+    .formGroup {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+  
+      label {
+        margin-bottom: 6px;
+        font-weight: bold;
+      }
+  
+      input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
+  
+    .formButtons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+  
+      button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button[type="submit"] {
+        background-color: #39b54a;
+        color: white;
+      }
+      button[type="button"] {
+        background-color: #ff6f6f;
+        color: white;
+      }
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 }
