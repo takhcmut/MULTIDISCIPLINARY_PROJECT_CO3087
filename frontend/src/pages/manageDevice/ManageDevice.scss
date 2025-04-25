@@ -155,6 +155,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    gap: 20px;
   }
 
   .modalContent {
@@ -163,13 +164,12 @@
     border-radius: 8px;
     width: 320px;
     max-width: 90%;
-  
-    // Animation here
+    gap: 10px;
     animation: slideUp 0.2s ease-out;
   
     h2 {
       margin-top: 0;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       font-size: 20px;
       text-align: center;
     }
@@ -177,7 +177,7 @@
     .formGroup {
       display: flex;
       flex-direction: column;
-      margin-bottom: 16px;
+      margin-bottom: 10px; // 👈 giảm từ mặc định 35px xuống 10px
   
       label {
         margin-bottom: 6px;
@@ -186,8 +186,9 @@
   
       input {
         padding: 8px;
-        border: 1px solid #ccc;
+        border: 1px solid #d9d9d9;
         border-radius: 4px;
+        background-color: #d9d9d9; // 👈 màu nền mới
       }
     }
   
@@ -203,16 +204,19 @@
         cursor: pointer;
         font-weight: bold;
       }
+  
       button[type="submit"] {
         background-color: #39b54a;
         color: white;
       }
+  
       button[type="button"] {
         background-color: #ff6f6f;
         color: white;
       }
     }
   }
+  
   
   @keyframes slideUp {
     from {

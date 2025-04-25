@@ -1,45 +1,88 @@
-.history {
-  margin: 20px;
+/* src/pages/history/History.scss */
+.historyPage {
+  display: flex;
+  height: 100%;
   font-family: sans-serif;
-  
-  h1 {
-    font-size: 32px;
-    color: #333;
-    margin-bottom: 30px;
-    text-align: center;
+
+  .sidebar {
+    width: 200px;
+    background: #f5f5f5;
+    padding: 16px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    .loading {
+      color: #666;
+      font-size: 14px;
+    }
+    .deviceItem {
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      &:hover { background: #e0e0e0; }
+      &.active {
+        background: #078cea;
+        color: white;
+      }
+    }
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  .historyContent {
+    flex: 1;
+    padding: 20px;
 
-    thead {
-      background-color: #078cea;
-      color: white;
+    h1 {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    .loading {
+      color: #666;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
 
-      th {
-        padding: 15px;
+      th, td {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
         text-align: left;
-        font-size: 20px;
+      }
+      th {
+        background: #f0f0f0;
+        cursor: pointer; /* show pointer for sortable */
+        user-select: none;
+      }
+      tbody tr:nth-child(odd) {
+        background: #fafafa;
       }
     }
 
-    tbody {
-      tr {
-        &:nth-child(even) {
-          background-color: #f9f9f9;
-        }
+    .pagination {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
 
-        &:hover {
-          background-color: #eef6fd;
+      button {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        background: white;
+        cursor: pointer;
+        border-radius: 4px;
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
-
-        td {
-          padding: 12px 15px;
-          font-size: 18px;
-          color: #555;
-          border: 1px solid #ddd;
+        &.active {
+          background: #078cea;
+          color: white;
+          border-color: #078cea;
         }
       }
     }

@@ -18,6 +18,8 @@ const ManageDevice = () => {
   const [devices, setDevices] = useState([]);
   const [formMode, setFormMode] = useState(null)
   const [formValue, setFormValue] = useState("");
+  const [formUsername, setFormUsername] = useState(""); // 👈 thêm state mới
+
 
   // 1) Fetch + poll
   useEffect(() => {
@@ -104,22 +106,23 @@ const ManageDevice = () => {
   // 3) Add / Delete form submission
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const username = localStorage.getItem("username");
+  
     try {
       if (formMode === "add") {
-        const res = await fetch(`${API_BASE_URL}${username}/addDevice`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ equipId: formValue }),
-        });
+        const res = await fetch(
+          `${API_BASE_URL}${formUsername}/addDevice/${formValue}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         if (!res.ok) throw new Error();
         toast.success("Đã thêm thiết bị");
       } else if (formMode === "delete") {
         const res = await fetch(
-          `${API_BASE_URL}${username}/deleteDevice/${formValue}`,
+          `${API_BASE_URL}${formUsername}/deleteDevice/${formValue}`,
           {
             method: "DELETE",
             headers: {
@@ -138,8 +141,10 @@ const ManageDevice = () => {
     } finally {
       setFormMode(null);
       setFormValue("");
+      setFormUsername("");
     }
   };
+  
 
   return (
     <div className="manageDevice">
@@ -179,10 +184,17 @@ const ManageDevice = () => {
               </h2>
               <form onSubmit={handleFormSubmit}>
                 <div className="formGroup">
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    value={formUsername}
+                    onChange={(e) => setFormUsername(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="formGroup">
                   <label>
-                    {formMode === "add"
-                      ? "ID thiết bị mới"
-                      : "ID thiết bị cần xóa"}
+                    {formMode === "add" ? "ID thiết bị mới" : "ID thiết bị cần xóa"}
                   </label>
                   <input
                     type="text"
@@ -197,12 +209,17 @@ const ManageDevice = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormMode(null)}
+                    onClick={() => {
+                      setFormMode(null);
+                      setFormValue("");
+                      setFormUsername(""); // 👈 reset luôn
+                    }}
                   >
                     Hủy
                   </button>
                 </div>
               </form>
+
             </div>
           </div>
         )}
