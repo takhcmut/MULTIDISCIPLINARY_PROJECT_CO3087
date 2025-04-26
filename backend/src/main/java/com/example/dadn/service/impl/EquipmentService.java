@@ -91,7 +91,8 @@ if (temp==null){return null;}
     if (now.after(temp.getScheduleKey().getTimestamp())) {
         // now > timestamp
         scheduleRepository.delete(temp);
-        return null;
+        return temp;
+        
     }
         
         return temp;
