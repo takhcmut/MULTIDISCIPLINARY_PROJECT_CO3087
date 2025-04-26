@@ -19,7 +19,7 @@ const Dashboard = () => {
 
   const fetchSensor = async (feedName, setter, historySetter) => {
     try {
-      const res = await fetch(`${ADA_BASE_URL}/${feedName}/data?limit=10`);
+      const res = await fetch(`${ADA_BASE_URL}/${feedName}/data?limit=20`);
       const data = await res.json();
       if (data.length > 0) {
         setter(Number(data[0].value));

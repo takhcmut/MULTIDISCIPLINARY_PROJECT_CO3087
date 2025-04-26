@@ -78,17 +78,7 @@ const ManageDevice = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feed, status: newState }),
       });
-      await fetch(
-        `${API_BASE_URL}${localStorage.getItem("username")}/changeState/${equipId}`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      await fetch(
-        `${API_BASE_URL}save?feed=${feed}&username=${localStorage.getItem("username")}`,
-        { method: "POST" }
-      );
+      
 
       setDevices((prev) =>
         prev.map((d) =>
