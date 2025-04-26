@@ -1,35 +1,63 @@
 .dashboard {
-    min-height: 100vh; /* or whatever layout you prefer */
-    padding: 20px;
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  
-    .dashCard {
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+  padding: 2rem;
+  background-color: #f0f0f0;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+
+  h2 {
+    text-align: center;
+    font-size: 2.2rem;
+    color: #333;
+    margin-bottom: 2rem;
+  }
+
+  .miniCards {
+    margin-bottom: 3rem;
+  }
+
+  .miniCard {
+    background-color: #fff !important;
+    color: #333;
+    border-radius: 12px;
+    border-left: 6px solid transparent;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .MuiTypography-h6 {
+      color: #666;
+    }
+
+    .MuiTypography-h4 {
+      color: #000;
+    }
+  }
+
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+
+    .chartBox {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      margin-bottom: 20px;
-  
+
+      h4 {
+        margin-bottom: 1rem;
+        color: #0077cc;
+      }
+
       &:hover {
         transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-      }
-  
-      .dashCardHeader {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-  
-        h1 {
-          font-size: 20px;
-          color: #333;
-          margin: 0;
-        }
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
       }
     }
   }
-  
+}
