@@ -43,7 +43,9 @@ const Navbar = ({ toggleLeftbar }) => {
         <span>{currentPageTitle}</span>
       </div>
 
-      <div className="rightNavbar" onClick={() => navigate("/profile")}>
+      <div className="rightNavbar" 
+      // onClick={() => navigate("/profile")}
+      >
         <img
           src="https://www.w3schools.com/howto/img_avatar.png"
           alt="User"

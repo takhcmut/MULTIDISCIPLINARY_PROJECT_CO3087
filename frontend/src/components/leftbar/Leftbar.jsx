@@ -61,13 +61,13 @@ const Leftbar = ({ isHidden }) => {
             <span>Lịch sử thiết bị</span>
           </button>
 
-          <button
+          {/* <button
             className={`leftBarItem ${activePath === "/profile" ? "active" : ""}`}
             onClick={() => handleNavigate("/profile")}
           >
             <img src={ProfileIcon} alt="Profile icon" />
             <span>Trang cá nhân</span>
-          </button>
+          </button> */}
 
           <button className="leftBarItem logoutBtn" onClick={handleLogout}>
             <img src={LogoutIcon} alt="Logout icon" />
