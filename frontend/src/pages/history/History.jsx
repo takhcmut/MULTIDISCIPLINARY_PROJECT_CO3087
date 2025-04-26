@@ -79,10 +79,10 @@ export default function History() {
     const sorted = [...logs].sort((a, b) => {
       let aval, bval;
       switch (sortKey) {
-        case "historyId":
-          aval = a.historyKey.historyId;
-          bval = b.historyKey.historyId;
-          break;
+        // case "historyId":
+        //   aval = a.historyKey.historyId;
+        //   bval = b.historyKey.historyId;
+        //   break;
         case "username":
           aval = a.username.toLowerCase();
           bval = b.username.toLowerCase();
@@ -170,9 +170,9 @@ export default function History() {
                 <table>
                   <thead>
                     <tr>
-                      <th onClick={() => handleSort("historyId")}>
+                      {/* <th onClick={() => handleSort("historyId")}>
                         ID Lịch sử {sortIcon("historyId")}
-                      </th>
+                      </th> */}
                       <th onClick={() => handleSort("username")}>
                         Username {sortIcon("username")}
                       </th>
@@ -190,7 +190,7 @@ export default function History() {
                   <tbody>
                     {paginatedLogs.map((h, idx) => (
                       <tr key={idx}>
-                        <td>{h.historyKey.historyId}</td>
+                        {/* <td>{h.historyKey.historyId}</td> */}
                         <td>{h.username}</td>
                         <td>{h.equipId}</td>
                         <td>{h.equipment_state}</td>
