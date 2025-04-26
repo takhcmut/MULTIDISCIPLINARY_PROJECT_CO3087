@@ -177,7 +177,7 @@
     .formGroup {
       display: flex;
       flex-direction: column;
-      margin-bottom: 10px; // 👈 giảm từ mặc định 35px xuống 10px
+      margin-bottom: 10px;
   
       label {
         margin-bottom: 6px;
@@ -188,7 +188,7 @@
         padding: 8px;
         border: 1px solid #d9d9d9;
         border-radius: 4px;
-        background-color: #d9d9d9; // 👈 màu nền mới
+        background-color: #d9d9d9;
       }
     }
   
@@ -203,16 +203,17 @@
         border-radius: 4px;
         cursor: pointer;
         font-weight: bold;
-      }
-  
-      button[type="submit"] {
-        background-color: #39b54a;
         color: white;
       }
   
-      button[type="button"] {
-        background-color: #ff6f6f;
-        color: white;
+      .addDeviceBtn {
+        background-color: #39b54a; // green
+      }
+      .deleteDeviceBtn {
+        background-color: #dc3545; // red
+      }
+      .cancelBtn {
+        background-color: #007bff; // blue
       }
     }
   }

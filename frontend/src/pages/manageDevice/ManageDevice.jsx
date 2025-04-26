@@ -217,20 +217,25 @@ const ManageDevice = () => {
                   />
                 </div>
                 <div className="formButtons">
-                  <button type="submit">
+                  <button
+                    type="submit"
+                    className={formMode === "add" ? "addDeviceBtn" : "deleteDeviceBtn"}
+                  >
                     {formMode === "add" ? "Thêm" : "Xóa"}
                   </button>
                   <button
                     type="button"
+                    className="cancelBtn"
                     onClick={() => {
                       setFormMode(null);
                       setFormValue("");
-                      setFormUsername(""); // 👈 reset luôn
+                      setFormUsername("");
                     }}
                   >
                     Hủy
                   </button>
                 </div>
+
               </form>
 
             </div>

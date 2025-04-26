@@ -1,113 +1,104 @@
 // src/pages/deviceInfo/DeviceInfo.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import HistoryIcon from "@mui/icons-material/History";
 import StatusIcon from "@mui/icons-material/CheckCircle";
 import TuneIcon from "@mui/icons-material/Tune";
-import AccessAlarmsOutlinedIcon from '@mui/icons-material/AccessAlarmsOutlined';
+import AccessAlarmsOutlinedIcon from "@mui/icons-material/AccessAlarmsOutlined";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { TextField, Button } from "@mui/material";
-
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { ToggleButton, ToggleButtonGroup, Button } from "@mui/material";
+import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-
-
-
-
-
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { loadCache, saveCache } from "../../utils/cache";
 import "./DeviceInfo.scss";
 
 const API_BASE_URL = "http://localhost:8080/dadn";
 const CONTROL_URL  = "http://localhost:5000/control";
 
 export default function DeviceInfo() {
-  const { id }     = useParams();         // numeric equipId
+  const { id }     = useParams();
   const navigate   = useNavigate();
   const username   = localStorage.getItem("username");
   const token      = localStorage.getItem("token");
 
-  // human‑readable feed name, loaded from your /getequip endpoint
-  const [feedName, setFeedName] = useState(null);
-  const [tempLimit, setTempLimit]                 = useState(null);
-  const [brightnessLimit, setBrightnessLimit]     = useState(null);
+  // Device & limits
+  const [feedName, setFeedName]       = useState(null);
+  const [tempLimit, setTempLimit]     = useState(null);
+  const [brightnessLimit, setBrightnessLimit] = useState(null);
 
-  // history & sensor state
-  const [historyList, setHistoryList]       = useState([]);
-  const [isRefreshing, setIsRefreshing]     = useState(false);
-  const [temperature, setTemperature]       = useState(null);
-  const [brightness, setBrightness]         = useState(null);
-  const [sensorState, setSensorState]       = useState(null);
+  // Sensors + history raw
+  const [historyList, setHistoryList] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [temperature, setTemperature]   = useState(null);
+  const [brightness, setBrightness]     = useState(null);
+  const [sensorState, setSensorState]   = useState(null);
 
-  // config + alarms
+  // Config toggles
   const [isEditingConfig, setIsEditingConfig]     = useState(false);
   const [isAutoCheckEnabled, setIsAutoCheckEnabled] = useState(true);
   const [isTempOver, setIsTempOver]               = useState(false);
   const [isBrightnessOver, setIsBrightnessOver]   = useState(false);
 
-  const [hasSavedConfig, setHasSavedConfig] = useState(false);
-  var warningCount = 0;
-  // const [warningCount, setWarningCount] = useState(0);
-  
+  // Timer
+  const [absoluteTime, setAbsoluteTime] = useState(dayjs());
+  const [timerAction, setTimerAction]   = useState("on");
 
-const [timerAction, setTimerAction] = useState("on"); // "on" hoặc "off"
+  // Sorting & pagination
+  const [sortKey, setSortKey]       = useState("updateTime");
+  const [sortOrder, setSortOrder]   = useState("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const pageCount = Math.ceil(historyList.length / pageSize);
 
-
-
-const [absoluteTime, setAbsoluteTime] = useState(dayjs());
-
-
-
-  
-
-  // 1) Load config from localStorage
+  // 1) Load feedName & limits
   useEffect(() => {
-    async function loadName() {
+    const fetchDeviceInfo = async () => {
       if (!username || !token) return;
       try {
         const res = await fetch(`${API_BASE_URL}/${username}/getequip`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const list = await res.json();
-        const found = list.find(d => d.equipKey.equipId === Number(id));
-        if (found) {
-          setFeedName(found.equipName);
-          setTempLimit(found.tempLimit);
-          setBrightnessLimit(found.lightLimit);
+        const me = list.find(d => d.equipKey.equipId === +id);
+        if (me) {
+          setFeedName(me.equipName);
+          setTempLimit(me.tempLimit);
+          setBrightnessLimit(me.lightLimit);
         }
-      } catch (e) {
-        console.warn("Failed to load device name", e);
+      } catch (err) {
+        console.error("Failed to fetch device info", err);
       }
-    }
-    loadName();
+    };
+  
+    fetchDeviceInfo();
   }, [id, username, token]);
   
-  const loadHistory = async () => {
-    setIsRefreshing(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/${username}/gethistory/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setHistoryList(data.reverse());
-    } catch (e) {
-      console.error("History error", e);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+
   // 2) Fetch history
-  useEffect(() => {
-    loadHistory();
-  }, [id, username, token]);
+    const loadHistory = async () => {
+        setIsRefreshing(true);
+        try {
+          const res  = await fetch(`${API_BASE_URL}/${username}/gethistory/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          setHistoryList(data);
+          setCurrentPage(1);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsRefreshing(false);
+        }
+      };
+    
+      useEffect(() => {
+        loadHistory();
+      }, [id, username, token]);
   
   // 3) Poll temperature & brightness
   useEffect(() => {
@@ -170,7 +161,6 @@ const [absoluteTime, setAbsoluteTime] = useState(dayjs());
         }
       );
       toast.success("Cấu hình đã được lưu!");
-      setHasSavedConfig(true); // 🟢 Cho phép bắt đầu check
     } catch {
       toast.error("Lỗi khi lưu cấu hình.");
     }
@@ -275,7 +265,51 @@ const [absoluteTime, setAbsoluteTime] = useState(dayjs());
     return () => clearInterval(interval);
   }, [id, feedName]);
   
+
+  // 8) Sort + paginate history
+  const paginated = useMemo(() => {
+    const sorted = [...historyList].sort((a, b) => {
+      let av, bv;
+      switch (sortKey) {
+        case "updateTime":
+          av = new Date(a.updateTime);
+          bv = new Date(b.updateTime);
+          break;
+        case "username":
+          av = a.username.toLowerCase();
+          bv = b.username.toLowerCase();
+          break;
+        case "equipment_state":
+          av = a.equipment_state.toLowerCase();
+          bv = b.equipment_state.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      if (av < bv) return sortOrder === "asc" ? -1 : 1;
+      if (av > bv) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+    const start = (currentPage - 1) * pageSize;
+    return sorted.slice(start, start + pageSize);
+  }, [historyList, sortKey, sortOrder, currentPage]);
   
+  const toggleSort = key => {
+    if (sortKey === key) {
+      setSortOrder(o => o === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+    setCurrentPage(1);
+  };
+  const sortIcon = key => sortKey !== key ? "↕" : (sortOrder === "asc" ? "▲" : "▼");
+
+  // Pagination window
+  const pages = [];
+  const startP = Math.max(1, currentPage-2);
+  const endP   = Math.min(pageCount, currentPage+2);
+  for(let p=startP;p<=endP;p++) pages.push(p);
 
   return (
     <div className="deviceInfo">
@@ -463,26 +497,59 @@ const [absoluteTime, setAbsoluteTime] = useState(dayjs());
         {/* HISTORY */}
         <div className="deviceInfoCard">
           <div className="deviceInfoCardHeader">
-            <HistoryIcon />
-            <h1>Lịch sử Thiết Bị</h1>
+            <HistoryIcon /><h1>Lịch sử Thiết Bị</h1>
           </div>
-          <hr />
+          <hr/>
           <div className="deviceInfoCardBody">
-            {historyList.length === 0 ? (
-              <div>Không có bản ghi nào.</div>
-            ) : (
-              historyList.map((h, i) => (
-                <div key={i} className="historyItem">
-                  <div>
-                    <strong>Thời gian:</strong>{" "}
-                    {new Date(h.updateTime).toLocaleString()}
-                  </div>
-                  <div>
-                    <strong>Trạng thái:</strong> {h.equipment_state}
-                  </div>
-                </div>
-              ))
-            )}
+            {isRefreshing
+              ? <div>Đang tải...</div>
+              : paginated.length === 0
+                ? <div>Không có bản ghi nào.</div>
+                : <>
+                    <table className="historyTable">
+                      <thead>
+                        <tr>
+                          <th onClick={() => toggleSort("username")}>
+                            Người Dùng {sortIcon("username")}
+                          </th>
+                          <th onClick={() => toggleSort("updateTime")}>
+                            Thời Gian {sortIcon("updateTime")}
+                          </th>
+                          <th onClick={() => toggleSort("equipment_state")}>
+                            Trạng Thái {sortIcon("equipment_state")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginated.map((h, i) => (
+                          <tr key={i}>
+                            <td>{h.username}</td>
+                            <td>{new Date(h.updateTime).toLocaleString()}</td>
+                            <td>{h.equipment_state}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    <div className="pagination">
+                      <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
+                        « Đầu
+                      </button>
+                      {pages.map(p => (
+                        <button
+                          key={p}
+                          className={p === currentPage ? "active" : ""}
+                          onClick={() => setCurrentPage(p)}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button onClick={() => setCurrentPage(pageCount)} disabled={currentPage === pageCount}>
+                        Cuối »
+                      </button>
+                    </div>
+                  </>
+            }
           </div>
         </div>
       </div>
