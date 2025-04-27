@@ -15,7 +15,7 @@ const Navbar = ({ toggleLeftbar }) => {
     "/history": "Lịch sử thiết bị",
     "/profile": "Trang cá nhân",
     "/device-info": "Thông tin thiết bị",
-    "/dashborad": "Dashboard",
+    "/dashboard": "Dashboard",
     "/": "BKSmart Home",
   };
 

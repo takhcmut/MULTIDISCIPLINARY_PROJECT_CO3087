@@ -185,7 +185,11 @@ export default function DeviceInfo() {
   };
   // 6) auto‑check logic
   useEffect(() => {
-    if (!isAutoCheckEnabled || isEditingConfig || sensorState === 0) return;
+    if (!isAutoCheckEnabled || isEditingConfig || sensorState === 0) {
+      setIsTempOver(false);
+      setIsBrightnessOver(false);
+      return;
+    }
       function check() {
         let turnOff = false;
         

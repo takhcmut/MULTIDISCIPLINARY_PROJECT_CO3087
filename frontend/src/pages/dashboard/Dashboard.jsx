@@ -39,7 +39,7 @@ export default function Dashboard() {
   const [startDateTime, setStartDateTime] = useState(dayjs().startOf('day'));
   const [endDateTime,   setEndDateTime]   = useState(dayjs().endOf('day'));
 
-  const fetchSensor = async (feedName, setValue, setHistory, setError) => {
+  const fetchSensor = async (feedName, setHistory, setError) => {
     const dayStart = startDateTime.toISOString();
     const dayEnd   = endDateTime.toISOString();
     const url = `${ADA_BASE_URL}/${feedName}/data/chart`
@@ -48,22 +48,6 @@ export default function Dashboard() {
       + `&limit=100`;
 
     try {
-<<<<<<< Updated upstream
-      const res = await fetch(`${ADA_BASE_URL}/${feedName}/data?limit=20`);
-      const data = await res.json();
-      if (data.length > 0) {
-        setter(Number(data[0].value));
-        const historyData = data.map((item) => ({
-          time: new Date(item.created_at).toLocaleString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-            day: '2-digit',
-            month: '2-digit',
-          }),
-          value: Number(item.value),
-        })).reverse();
-        historySetter(historyData);
-=======
       const res = await fetch(url);
       if (!res.ok) {
         let msg;
@@ -81,7 +65,6 @@ export default function Dashboard() {
         }
         setError(msg);
         return;
->>>>>>> Stashed changes
       }
       setError(null);
 
@@ -98,28 +81,67 @@ export default function Dashboard() {
           value: Number(valStr).toFixed(2),
         };
       });
-
-      if (chartData.length > 0) {
-        // newest is last
-        setValue(chartData[chartData.length - 1].value);
-      }
       setHistory(chartData);
     } catch (err) {
       setError(`Network error: ${err.message}`);
     }
   };
+  const fetchLatestSensor = async (feedName, setValue, setError) => {
+    const url = `${ADA_BASE_URL}/${feedName}/data?limit=1`;
+  
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        let msg;
+        switch (res.status) {
+          case 400: msg = "400 Bad Request — Invalid format."; break;
+          case 401: msg = "401 Unauthorized — Check your key."; break;
+          case 403: msg = "403 Forbidden — Action not allowed."; break;
+          case 404: msg = "404 Not Found — Feed doesn’t exist."; break;
+          case 406: msg = "406 Not Acceptable — Unsupported format."; break;
+          case 422: msg = "422 Unprocessable — Missing/invalid value."; break;
+          case 429: msg = "429 Too Many Requests — Slow down!"; break;
+          case 500: msg = "500 Internal Error — Try again later."; break;
+          case 503: msg = "503 Service Unavailable — Maintenance."; break;
+          default:  msg = `${res.status} ${res.statusText}`; 
+        }
+        setError(msg);
+        return;
+      }
+      setError(null);
+  
+      const json = await res.json();
+      const latestValue = Number(json[0].value).toFixed(2);
+      setValue(latestValue);
+    } catch (err) {
+      setError(`Network error: ${err.message}`);
+    }
+  };
+  
 
-  // whenever the confirmed filter times change, re-fetch
   useEffect(() => {
-    fetchSensor("cambien2", setLight, setLH, setLE);
-    fetchSensor("cambien1", setTemp,  setTH, setTE);
-
-    const iv = setInterval(() => {
-      fetchSensor("cambien2", setLight, setLH, setLE);
-      fetchSensor("cambien1", setTemp,  setTH, setTE);
+    // fetch history immediately whenever time range changes
+    fetchSensor("cambien2", setLH, setLE);
+    fetchSensor("cambien1",  setTH, setTE);
+  
+    // also set a 5s interval to refresh the charts
+    const historyInterval = setInterval(() => {
+      fetchSensor("cambien2", setLH, setLE);
+      fetchSensor("cambien1",  setTH, setTE);
     }, 5000);
-    return () => clearInterval(iv);
+  
+    // set a 2s interval to fetch latest values separately
+    const latestInterval = setInterval(() => {
+      fetchLatestSensor("cambien2", setLight, setLE);
+      fetchLatestSensor("cambien1", setTemp,  setTE);
+    }, 2000);
+  
+    return () => {
+      clearInterval(historyInterval);
+      clearInterval(latestInterval);
+    };
   }, [startDateTime, endDateTime]);
+  
 
   return (
     <div className="dashboard">
